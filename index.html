@@ -28,16 +28,20 @@
             font-family: 'Orbitron', sans-serif;
         }
 
-        /* Стилове за новата CSS Седмица */
+        /* Стилове за новата CSS Седмица (Бяло 7 в синя кутийка) */
         .lucky-seven {
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            background: linear-gradient(to bottom, #ff3333, #990000);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 8px rgba(255, 51, 51, 0.6));
+            color: #ffffff;
+            background: linear-gradient(145deg, #1e40af, #1d4ed8); /* Синьо емоджи фон */
+            border-radius: 0.5rem;
+            padding: 0 0.5rem;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.5), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
             display: inline-block;
-            line-height: 1;
+            line-height: 1.1;
+            border: 1px solid #2563eb;
         }
 
         /* Machine styling */
@@ -191,8 +195,8 @@
             </h2>
             <div class="space-y-3 font-display">
                 <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
-                    <!-- Заменено с три CSS седмици -->
-                    <span class="text-2xl tracking-widest flex gap-1"><span class="lucky-seven">7</span><span class="lucky-seven">7</span><span class="lucky-seven">7</span></span>
+                    <!-- Заменено с три кутийки в таблицата с печалби -->
+                    <span class="text-2xl tracking-widest flex gap-2"><span class="lucky-seven">7</span><span class="lucky-seven">7</span><span class="lucky-seven">7</span></span>
                     <span class="text-green-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]">$1,000,000</span>
                 </div>
                 <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
@@ -284,7 +288,7 @@
     </div>
 
     <script>
-        // Configuration - Променено емоджито 7️⃣ на чист текстов стринг '7'
+        // Configuration - Променено емоджито на стринг '7'
         const symbols = ['7', '💎', '⭐', '🍒', '🍋', '🍉', '🍊'];
         const payouts = {
             '7': 1000000,
@@ -317,7 +321,7 @@
             return '$' + amount.toLocaleString('en-US');
         }
 
-        // Нова функция, която рендерира или емоджи, или CSS стилизирана седмица
+        // Рендериране на емоджи или CSS кутийка
         function renderSymbolToReel(reelElement, symbol) {
             if (symbol === '7') {
                 reelElement.innerHTML = `<span class="lucky-seven">7</span>`;
