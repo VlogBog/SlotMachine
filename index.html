@@ -28,6 +28,18 @@
             font-family: 'Orbitron', sans-serif;
         }
 
+        /* Стилове за новата CSS Седмица */
+        .lucky-seven {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            background: linear-gradient(to bottom, #ff3333, #990000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(255, 51, 51, 0.6));
+            display: inline-block;
+            line-height: 1;
+        }
+
         /* Machine styling */
         .slot-machine {
             background: linear-gradient(145deg, #27272a, #18181b);
@@ -179,7 +191,8 @@
             </h2>
             <div class="space-y-3 font-display">
                 <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
-                    <span class="text-2xl tracking-widest">7️⃣7️⃣7️⃣</span>
+                    <!-- Заменено с три CSS седмици -->
+                    <span class="text-2xl tracking-widest flex gap-1"><span class="lucky-seven">7</span><span class="lucky-seven">7</span><span class="lucky-seven">7</span></span>
                     <span class="text-green-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]">$1,000,000</span>
                 </div>
                 <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
@@ -271,10 +284,10 @@
     </div>
 
     <script>
-        // Configuration
-        const symbols = ['7️⃣', '💎', '⭐', '🍒', '🍋', '🍉', '🍊'];
+        // Configuration - Променено емоджито 7️⃣ на чист текстов стринг '7'
+        const symbols = ['7', '💎', '⭐', '🍒', '🍋', '🍉', '🍊'];
         const payouts = {
-            '7️⃣': 1000000,
+            '7': 1000000,
             '💎': 50000,
             '⭐': 25000,
             '🍒': 12500,
@@ -302,6 +315,15 @@
 
         function formatCurrency(amount) {
             return '$' + amount.toLocaleString('en-US');
+        }
+
+        // Нова функция, която рендерира или емоджи, или CSS стилизирана седмица
+        function renderSymbolToReel(reelElement, symbol) {
+            if (symbol === '7') {
+                reelElement.innerHTML = `<span class="lucky-seven">7</span>`;
+            } else {
+                reelElement.textContent = symbol;
+            }
         }
 
         function getRandomSymbol() {
@@ -338,7 +360,7 @@
             // Rapidly change symbols to simulate spinning
             const spinIntervals = reelElements.map(reel => {
                 return setInterval(() => {
-                    reel.textContent = getRandomSymbol();
+                    renderSymbolToReel(reel, getRandomSymbol());
                 }, 50); // Change symbol every 50ms
             });
 
@@ -353,7 +375,7 @@
                     
                     // Determine final symbol for this reel
                     const finalSymbol = getRandomSymbol();
-                    reelElements[index].textContent = finalSymbol;
+                    renderSymbolToReel(reelElements[index], finalSymbol);
                     finalResults.push(finalSymbol);
 
                     // If it's the last reel, evaluate results
@@ -392,7 +414,7 @@
             
             messageBoard.classList.remove('text-zinc-300');
             
-            if (symbol === '7️⃣') {
+            if (symbol === '7') {
                 messageBoard.classList.add('text-yellow-400', 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]', 'win-text-anim');
                 messageBoard.textContent = `ДЖАКПОТ! +${formatCurrency(amount)}`;
             } else {
@@ -453,7 +475,7 @@
         window.onload = () => {
             balanceDisplay.textContent = formatCurrency(balance);
             reelElements.forEach(reel => {
-                reel.textContent = getRandomSymbol();
+                renderSymbolToReel(reel, getRandomSymbol());
             });
         };
     </script>
