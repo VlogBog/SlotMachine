@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модерна Слот Машина</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-gold: #ffd700;
+            --neon-purple: #b026ff;
+            --bg-dark: #09090b;
+            --machine-bg: #18181b;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(176, 38, 255, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 215, 0, 0.05), transparent 25%);
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .font-display {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Machine styling */
+        .slot-machine {
+            background: linear-gradient(145deg, #27272a, #18181b);
+            border-radius: 2rem;
+            box-shadow: 
+                0 0 40px rgba(0,0,0,0.8),
+                inset 0 2px 2px rgba(255,255,255,0.1),
+                inset 0 -5px 15px rgba(0,0,0,0.5),
+                0 0 15px rgba(255, 215, 0, 0.1);
+            border: 2px solid #3f3f46;
+            position: relative;
+        }
+
+        .slot-machine::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-purple), transparent, var(--neon-gold));
+            z-index: -1;
+            border-radius: 2.1rem;
+            opacity: 0.3;
+        }
+
+        /* Reel styling */
+        .reel-container {
+            background: #000;
+            border-radius: 1rem;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8), inset 0 -10px 20px rgba(0,0,0,0.8);
+            border: 4px solid #27272a;
+            border-bottom-color: #3f3f46;
+            border-top-color: #18181b;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .reel-container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none;
+        }
+
+        .reel {
+            font-size: 5rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: filter 0.1s;
+        }
+
+        @media (max-width: 640px) {
+            .reel {
+                font-size: 3.5rem;
+                height: 90px;
+            }
+        }
+
+        /* Spinning effect */
+        .spinning {
+            filter: blur(4px) contrast(1.2);
+            transform: scaleY(1.2);
+            animation: shake 0.1s infinite alternate;
+        }
+
+        @keyframes shake {
+            0% { transform: scaleY(1.2) translateY(-2px); }
+            100% { transform: scaleY(1.2) translateY(2px); }
+        }
+
+        /* Button styling */
+        .spin-btn {
+            background: linear-gradient(to bottom, #fde047, #eab308);
+            color: #422006;
+            box-shadow: 
+                0 6px 0 #a16207,
+                0 10px 20px rgba(234, 179, 8, 0.4);
+            transition: all 0.1s active;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+        }
+
+        .spin-btn:active, .spin-btn.disabled-btn {
+            transform: translateY(6px);
+            box-shadow: 
+                0 0 0 #a16207,
+                0 2px 5px rgba(234, 179, 8, 0.4);
+        }
+
+        .spin-btn.disabled-btn {
+            background: linear-gradient(to bottom, #52525b, #3f3f46);
+            color: #a1a1aa;
+            box-shadow: 0 0 0 #27272a;
+            cursor: not-allowed;
+            text-shadow: none;
+        }
+
+        /* Win animations */
+        .win-glow {
+            animation: pulse-glow 1s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2); }
+            100% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.9), inset 0 0 40px rgba(255, 215, 0, 0.4); border-color: var(--neon-gold); }
+        }
+
+        .win-text-anim {
+            animation: scale-bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes scale-bounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .paytable-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        
+        .paytable-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255, 215, 0, 0.3);
+            transform: translateX(5px);
+        }
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <header class="text-center mb-8 w-full max-w-5xl">
+        <h1 class="text-4xl md:text-6xl font-display font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-600 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+            Royal Slots
+        </h1>
+        <p class="text-zinc-400 mt-2 text-sm md:text-base font-medium tracking-widest">ОПИТАЙ КЪСМЕТА СИ</p>
+    </header>
+
+    <div class="w-full max-w-5xl flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-center">
+        
+        <aside class="w-full lg:w-1/3 max-w-sm rounded-2xl bg-zinc-900/80 backdrop-blur-md border border-zinc-800 p-6 shadow-2xl order-2 lg:order-1">
+            <h2 class="text-xl font-display font-bold text-yellow-500 mb-6 flex items-center justify-center gap-2 border-b border-zinc-800 pb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                ТАБЛИЦА С ПЕЧАЛБИ
+            </h2>
+            <div class="space-y-3 font-display">
+                <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
+                    <span class="text-2xl tracking-widest">7️⃣7️⃣7️⃣</span>
+                    <span class="text-green-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]">$1,000,000</span>
+                </div>
+                <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
+                    <span class="text-2xl tracking-widest">💎💎💎</span>
+                    <span class="text-yellow-100 font-bold">$50,000</span>
+                </div>
+                <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
+                    <span class="text-2xl tracking-widest">⭐⭐⭐</span>
+                    <span class="text-yellow-100 font-bold">$25,000</span>
+                </div>
+                <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
+                    <span class="text-2xl tracking-widest">🍒🍒🍒</span>
+                    <span class="text-yellow-100 font-bold">$12,500</span>
+                </div>
+                <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
+                    <span class="text-2xl tracking-widest">🍋🍋🍋</span>
+                    <span class="text-yellow-100 font-bold">$5,000</span>
+                </div>
+                <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
+                    <span class="text-2xl tracking-widest">🍉🍉🍉</span>
+                    <span class="text-yellow-100 font-bold">$2,500</span>
+                </div>
+                <div class="paytable-item flex justify-between items-center p-3 rounded-lg">
+                    <span class="text-2xl tracking-widest">🍊🍊🍊</span>
+                    <span class="text-yellow-100 font-bold">$1,000</span>
+                </div>
+            </div>
+            <p class="text-xs text-zinc-500 mt-6 text-center italic">* Печалба се изплаща само при 3 еднакви символа.</p>
+        </aside>
+
+        <main class="w-full lg:w-auto order-1 lg:order-2 flex flex-col items-center">
+            
+            <!-- Information Display -->
+            <div class="mb-6 w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-4 flex justify-between items-center shadow-inner">
+                <div>
+                    <p class="text-zinc-500 text-xs font-bold uppercase tracking-wider">Баланс</p>
+                    <p class="text-2xl font-display font-bold text-white" id="balanceDisplay">$100</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-zinc-500 text-xs font-bold uppercase tracking-wider">Последна Печалба</p>
+                    <p class="text-2xl font-display font-bold text-green-400" id="lastWinDisplay">$0</p>
+                </div>
+            </div>
+
+            <!-- The Machine -->
+            <div class="slot-machine p-6 md:p-10 w-full max-w-md" id="machineContainer">
+                <!-- Reels Grid -->
+                <div class="flex justify-center gap-3 md:gap-5 mb-8">
+                    <div class="reel-container w-24 md:w-32">
+                        <div class="reel" id="reel1">🍒</div>
+                    </div>
+                    <div class="reel-container w-24 md:w-32">
+                        <div class="reel" id="reel2">🍒</div>
+                    </div>
+                    <div class="reel-container w-24 md:w-32">
+                        <div class="reel" id="reel3">🍒</div>
+                    </div>
+                </div>
+
+                <!-- Message Board -->
+                <div class="h-16 mb-8 flex items-center justify-center bg-black/50 border border-zinc-700 rounded-lg shadow-inner overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-800/20 to-transparent"></div>
+                    <p id="messageBoard" class="text-xl md:text-2xl font-display font-bold text-zinc-300 z-10 text-center px-4 uppercase tracking-widest">
+                        ГОТОВ ЗА ИГРА
+                    </p>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex justify-center">
+                    <button id="spinButton" onclick="spin()" class="spin-btn font-display text-2xl md:text-3xl font-black px-12 py-4 md:px-16 md:py-5 rounded-full uppercase tracking-wider focus:outline-none select-none">
+                        Върти
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom Modal for Game Over -->
+    <div id="gameOverModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-sm w-full mx-4 shadow-[0_0_50px_rgba(255,215,0,0.15)] transform scale-95 transition-transform duration-300" id="modalContent">
+            <h3 class="text-3xl font-display font-bold text-white mb-2 text-center">КРАЙ НА ИГРАТА</h3>
+            <p class="text-zinc-400 text-center mb-8">Нямате достатъчно средства за ново завъртане. Искате ли да започнете нова игра?</p>
+            <div class="flex gap-4 justify-center">
+                <button onclick="resetGame()" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold py-3 px-6 rounded-lg w-full hover:from-yellow-300 hover:to-yellow-500 transition-colors shadow-lg shadow-yellow-500/20 uppercase tracking-wider font-display">
+                    Нова Игра
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const symbols = ['7️⃣', '💎', '⭐', '🍒', '🍋', '🍉', '🍊'];
+        const payouts = {
+            '7️⃣': 1000000,
+            '💎': 50000,
+            '⭐': 25000,
+            '🍒': 12500,
+            '🍋': 5000,
+            '🍉': 2500,
+            '🍊': 1000
+        };
+
+        // State
+        let isSpinning = false;
+        let balance = 100;
+        const SPIN_COST = 10;
+        
+        // DOM Elements
+        const reelElements = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+        const spinButton = document.getElementById('spinButton');
+        const messageBoard = document.getElementById('messageBoard');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const lastWinDisplay = document.getElementById('lastWinDisplay');
+        const machineContainer = document.getElementById('machineContainer');
+
+        function formatCurrency(amount) {
+            return '$' + amount.toLocaleString('en-US');
+        }
+
+        function getRandomSymbol() {
+            const randomIndex = Math.floor(Math.random() * symbols.length);
+            return symbols[randomIndex];
+        }
+
+        function resetUI() {
+            machineContainer.classList.remove('win-glow');
+            messageBoard.classList.remove('win-text-anim', 'text-green-400', 'text-yellow-400', 'drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]');
+            messageBoard.classList.add('text-zinc-300');
+            messageBoard.textContent = 'ВЪРТЕНЕ...';
+        }
+
+        function spin() {
+            if (isSpinning) return;
+            
+            if (balance < SPIN_COST) {
+                showModal();
+                return;
+            }
+
+            // Deduct spin cost
+            balance -= SPIN_COST;
+            balanceDisplay.textContent = formatCurrency(balance);
+            
+            isSpinning = true;
+            spinButton.classList.add('disabled-btn');
+            resetUI();
+
+            // Set animation classes
+            reelElements.forEach(reel => reel.classList.add('spinning'));
+
+            // Rapidly change symbols to simulate spinning
+            const spinIntervals = reelElements.map(reel => {
+                return setInterval(() => {
+                    reel.textContent = getRandomSymbol();
+                }, 50); // Change symbol every 50ms
+            });
+
+            // Stop reels sequentially
+            const stopTimes = [1000, 1500, 2000]; // Stop at 1s, 1.5s, 2s
+            const finalResults = [];
+
+            stopTimes.forEach((time, index) => {
+                setTimeout(() => {
+                    clearInterval(spinIntervals[index]);
+                    reelElements[index].classList.remove('spinning');
+                    
+                    // Determine final symbol for this reel
+                    const finalSymbol = getRandomSymbol();
+                    reelElements[index].textContent = finalSymbol;
+                    finalResults.push(finalSymbol);
+
+                    // If it's the last reel, evaluate results
+                    if (index === 2) {
+                        evaluateResult(finalResults);
+                    }
+                }, time);
+            });
+        }
+
+        function evaluateResult(results) {
+            const [r1, r2, r3] = results;
+            
+            // Check for 3 of a kind
+            if (r1 === r2 && r2 === r3) {
+                const winAmount = payouts[r1];
+                handleWin(winAmount, r1);
+            } else {
+                handleLoss();
+            }
+
+            // Re-enable button
+            setTimeout(() => {
+                isSpinning = false;
+                spinButton.classList.remove('disabled-btn');
+            }, 500); // Slight delay before user can spin again
+        }
+
+        function handleWin(amount, symbol) {
+            balance += amount;
+            balanceDisplay.textContent = formatCurrency(balance);
+            lastWinDisplay.textContent = formatCurrency(amount);
+
+            // Visual effects
+            machineContainer.classList.add('win-glow');
+            
+            messageBoard.classList.remove('text-zinc-300');
+            
+            if (symbol === '7️⃣') {
+                messageBoard.classList.add('text-yellow-400', 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]', 'win-text-anim');
+                messageBoard.textContent = `ДЖАКПОТ! +${formatCurrency(amount)}`;
+            } else {
+                messageBoard.classList.add('text-green-400', 'drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]', 'win-text-anim');
+                messageBoard.textContent = `ПЕЧЕЛИТЕ ${formatCurrency(amount)}!`;
+            }
+        }
+
+        function handleLoss() {
+            messageBoard.classList.remove('text-zinc-300');
+            messageBoard.classList.add('text-red-400');
+            messageBoard.textContent = 'ОПИТАЙ ПАК';
+            
+            // Small shake effect on loss
+            setTimeout(() => {
+                messageBoard.classList.add('text-zinc-300');
+                messageBoard.classList.remove('text-red-400');
+                
+                if (balance < SPIN_COST) {
+                    messageBoard.textContent = 'НЕДОСТАТЪЧЕН БАЛАНС';
+                } else {
+                    messageBoard.textContent = 'ГОТОВ ЗА ИГРА';
+                }
+            }, 2000);
+        }
+
+        // Modal Logic
+        const gameOverModal = document.getElementById('gameOverModal');
+        const modalContent = document.getElementById('modalContent');
+
+        function showModal() {
+            gameOverModal.classList.remove('hidden');
+            setTimeout(() => {
+                gameOverModal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function resetGame() {
+            gameOverModal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                gameOverModal.classList.add('hidden');
+                balance = 100;
+                balanceDisplay.textContent = formatCurrency(balance);
+                lastWinDisplay.textContent = formatCurrency(0);
+                messageBoard.textContent = 'ГОТОВ ЗА ИГРА';
+                messageBoard.classList.remove('text-red-400', 'text-yellow-400', 'text-green-400', 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]', 'drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]', 'win-text-anim');
+                messageBoard.classList.add('text-zinc-300');
+                machineContainer.classList.remove('win-glow');
+            }, 300);
+        }
+
+        // Initialize display randomly on load to look nice
+        window.onload = () => {
+            balanceDisplay.textContent = formatCurrency(balance);
+            reelElements.forEach(reel => {
+                reel.textContent = getRandomSymbol();
+            });
+        };
+    </script>
+</body>
+</html>
